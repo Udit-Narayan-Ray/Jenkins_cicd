@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  java_app:
+    image: image4javawebapp:v0.1
+    container_name: webapp
+    environment:
+      SPRING_APPLICATION_JSON: '{
+             "spring.datasource.url": "jdbc:mysql://mysql:3306/test?useSSL=false&allowPublicKeyRetrieval=true",
+             "spring.datasource.username": "rku",
+             "spring.datasource.password": "Localhost@1",
+             "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MySQL8Dialect",
+             "spring.jpa.hibernate.ddl-auto" : "update"
+           }'
+    ports:
+      - 8080:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - default-network
+
+  mysql:
+    image: mysql:8.0.27
+    container_name: mysqldb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test
+      MYSQL_USER: rku
+      MYSQL_PASSWORD: Localhost@1
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+#      - my-db:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "mysql", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      timeout: 10s
+      retries: 5
+    networks:
+      - default-network
+#volumes:
+#  <docker-managing volume in /var/lib/docker/volumes/my-db> i.e my-db:
+networks:
+  default-network:
+
+
